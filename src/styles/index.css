@@ -1,0 +1,134 @@
+@import 'tailwindcss';
+@import '../../assets/design-tokens.css';
+
+@theme {
+  --font-script: 'Great Vibes', cursive;
+  --font-heading: 'Noto Serif TC', 'Songti TC', serif;
+  --font-body: 'Noto Sans TC', 'PingFang TC', sans-serif;
+}
+
+@layer base {
+  :root {
+    --space-xs: var(--primitive-spacing-1);
+    --space-sm: var(--primitive-spacing-2);
+    --space-md: var(--primitive-spacing-6);
+    --space-lg: var(--primitive-spacing-8);
+    --space-xl: var(--primitive-spacing-12);
+    --space-2xl: var(--primitive-spacing-16);
+    --space-3xl: var(--primitive-spacing-24);
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100svh;
+    font-family: var(--typography-font-body);
+    font-weight: 400;
+    line-height: 1.7;
+    color: var(--color-foreground);
+    background:
+      radial-gradient(
+        120% 80% at 8% 0%,
+        rgb(63 107 86 / 10%),
+        transparent 55%
+      ),
+      radial-gradient(
+        90% 70% at 92% 18%,
+        rgb(184 146 106 / 14%),
+        transparent 50%
+      ),
+      linear-gradient(180deg, var(--color-background) 0%, var(--color-muted) 100%);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--typography-font-heading);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes hint-pulse {
+  from {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0.35rem);
+  }
+}
+
+.hint-pulse {
+  animation: hint-pulse 700ms ease-in-out infinite alternate;
+}
+
+[data-reveal] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hint-pulse {
+    animation: none;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+  }
+}

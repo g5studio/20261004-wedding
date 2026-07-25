@@ -1,0 +1,59 @@
+{
+  "ticket": "{TICKET}",
+  "environment": {
+    "label": "{ENV_LABEL}",
+    "baseUrl": "http://localhost:5173",
+    "route": "/",
+    "viewport": "Desktop Chrome",
+    "locale": "en-US",
+    "headless": true,
+    "blockingLayers": {
+      "popupSelectors": [],
+      "closeSelectors": []
+    }
+  },
+  "notes": [],
+  "report": {
+    "heading": "{TICKET} local QA verification ({ENV_LABEL})",
+    "columns": [
+      { "key": "tab", "header": "Tab" },
+      { "key": "verifyPoints", "header": "Verification" },
+      { "key": "result", "header": "Result" },
+      { "key": "screenshot", "header": "Screenshot", "type": "screenshot" }
+    ]
+  },
+  "items": [
+    {
+      "id": "T0",
+      "slug": "01-home",
+      "tab": "Home",
+      "title": "Landing page renders",
+      "verifyPoints": "Home page loads without blank screen; primary navigation is visible",
+      "screenshot": "T0.png",
+      "result": "",
+      "notes": "",
+      "actions": [
+        { "type": "goto", "url": "/" },
+        { "type": "wait", "testId": "app-root" },
+        { "type": "waitMs", "ms": 2000 },
+        { "type": "screenshot", "file": "T0.png" }
+      ]
+    },
+    {
+      "id": "T1",
+      "slug": "02-feature",
+      "tab": "Feature",
+      "title": "Feature panel opens",
+      "verifyPoints": "Target panel content is visible after navigation",
+      "screenshot": "T1.png",
+      "result": "",
+      "notes": "",
+      "actions": [
+        { "type": "click", "testId": "feature-nav-item" },
+        { "type": "wait", "testId": "feature-panel" },
+        { "type": "waitMs", "ms": 2000 },
+        { "type": "screenshot", "file": "T1.png" }
+      ]
+    }
+  ]
+}
