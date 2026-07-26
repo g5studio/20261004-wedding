@@ -11,7 +11,7 @@ export const lenisWheelMultiplier = 0.85
 /**
  * 單次場景轉場動畫時長（秒）。
  */
-export const sceneTransitionDurationSeconds = 1.2
+export const sceneTransitionDurationSeconds = 1.45
 
 /**
  * 滾輪觸發場景切換的最小 delta 門檻。
@@ -26,7 +26,7 @@ export const sceneTouchSwipeThresholdPx = 48
 /**
  * 轉場結束後的輸入冷卻（毫秒），避免觸控板慣性連切兩幕。
  */
-export const sceneInputCooldownMs = 260
+export const sceneInputCooldownMs = 140
 
 /**
  * 3D 場景透視距離（px）。

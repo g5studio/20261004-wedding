@@ -5,10 +5,8 @@ import {
   type CSSProperties,
 } from 'react'
 import gsap from 'gsap'
-import { depthScenes } from '@/data/wedding'
+import { depthScenes, wedding } from '@/data/wedding'
 import {
-  distanceToScene,
-  getCameraDirectionHint,
   getSceneProgress,
   sampleCameraPath,
   scenePoses,
@@ -38,23 +36,25 @@ type DepthStageProps = {
 export function DepthStage({ onSceneProgress }: DepthStageProps) {
   const stageRef = useRef<HTMLElement>(null)
   const cameraRef = useRef<HTMLDivElement>(null)
+  const introRef = useRef<HTMLDivElement>(null)
   const sceneRefs = useRef<Array<HTMLElement | null>>([])
   const activeIndexRef = useRef(0)
   const journeyProgressRef = useRef(0)
   const isAnimatingRef = useRef(false)
   const inputLockedRef = useRef(false)
-  const directionHintRef = useRef('滾動切換下一幕')
   const touchStartYRef = useRef<number | null>(null)
   const touchConsumedRef = useRef(false)
   const transitionTweenRef = useRef<gsap.core.Tween | null>(null)
+  const introTweenRef = useRef<gsap.core.Timeline | null>(null)
   const unlockTimerRef = useRef<number | null>(null)
+  const isIntroRef = useRef(true)
   const goToSceneRef = useRef<(index: number) => void>(() => {})
   const onSceneProgressRef = useRef(onSceneProgress)
 
   const [activeIndex, setActiveIndex] = useState(0)
-  const [directionHint, setDirectionHint] = useState('滾動切換下一幕')
   const [isStatic, setIsStatic] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isIntro, setIsIntro] = useState(true)
 
   const sceneCount = depthScenes.length
   const lastSceneIndex = sceneCount - 1
@@ -86,72 +86,83 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
         (node): node is HTMLElement => node instanceof HTMLElement,
       )
 
-    const getAmbientLayers = () =>
-      Array.from(
-        cameraNode.querySelectorAll<HTMLElement>('[data-ambient-layer]'),
-      )
-
     const reportProgress = (index: number) => {
       onSceneProgressRef.current?.(
         lastSceneIndex <= 0 ? 1 : index / lastSceneIndex,
       )
     }
 
+    const getAmbientLayers = () =>
+      Array.from(
+        cameraNode.querySelectorAll<HTMLElement>('[data-ambient-layer]'),
+      )
+
+    const smoothStep = (value: number) => {
+      const clamped = gsap.utils.clamp(0, 1, value)
+      return clamped * clamped * (3 - 2 * clamped)
+    }
+
+    const getSceneOpacity = (index: number, progress: number) => {
+      const sceneProgress = getSceneProgress(index)
+
+      if (index > 0) {
+        const previousProgress = getSceneProgress(index - 1)
+        if (progress >= previousProgress && progress < sceneProgress) {
+          return smoothStep(
+            (progress - previousProgress) / (sceneProgress - previousProgress),
+          )
+        }
+      }
+
+      if (index < lastSceneIndex) {
+        const nextProgress = getSceneProgress(index + 1)
+        if (progress >= sceneProgress && progress <= nextProgress) {
+          return 1 - smoothStep(
+            (progress - sceneProgress) / (nextProgress - sceneProgress),
+          )
+        }
+      }
+
+      return progress === sceneProgress ? 1 : 0
+    }
+
     const applyCamera = (progress: number) => {
       journeyProgressRef.current = progress
       const camera = sampleCameraPath(progress)
-      cameraNode.style.transform = [
-        `rotateX(${-camera.rx}deg)`,
-        `rotateY(${-camera.ry}deg)`,
-        `rotateZ(${-camera.rz}deg)`,
-        `translate3d(${-camera.x}px, ${-camera.y}px, ${-camera.z}px)`,
-      ].join(' ')
+      cameraNode.style.transform = `translate3d(0, 0, ${-camera.z}px)`
 
-      getScenes().forEach((scene, index) => {
-        const pose = scenePoses[index] ?? scenePoses[0]
-        const distance = distanceToScene(camera, pose)
-        const visibility = gsap.utils.clamp(
-          0,
+      const sceneDistanceList = getScenes()
+      sceneDistanceList.forEach((scene, index) => {
+        const visibility = getSceneOpacity(index, progress)
+        const depthProgress = gsap.utils.clamp(
+          -1,
           1,
-          1 - distance / depthFocusDistancePx,
+          (camera.z - Number(gsap.getProperty(scene, 'z'))) /
+            depthFocusDistancePx,
         )
-        gsap.set(scene, {
-          opacity: visibility,
-          filter: `blur(${(1 - visibility) * 12}px)`,
-          scale: 0.88 + visibility * 0.12,
-        })
+        const horizontalProgress = 0
+        scene.style.opacity = String(visibility)
+        scene.style.setProperty('--scene-depth-progress', String(depthProgress))
+        scene.style.setProperty(
+          '--scene-horizontal-progress',
+          String(horizontalProgress),
+        )
+        scene.style.setProperty('--scene-visibility', String(visibility))
       })
 
-      getAmbientLayers().forEach((layer) => {
-        const distance = distanceToScene(camera, {
-          x: Number(gsap.getProperty(layer, 'x')),
-          y: Number(gsap.getProperty(layer, 'y')),
-          z: Number(gsap.getProperty(layer, 'z')),
-        })
-        gsap.set(layer, {
-          opacity: gsap.utils.clamp(
-            0.04,
-            0.32,
-            1 - distance / (depthFocusDistancePx * 1.6),
-          ),
-        })
-      })
-
-      const hint = getCameraDirectionHint(camera)
-      if (hint !== directionHintRef.current) {
-        directionHintRef.current = hint
-        setDirectionHint(hint)
-      }
     }
 
     const placeWorld = () => {
+      const sceneScale = 1
+
       getScenes().forEach((scene, index) => {
         const pose = scenePoses[index] ?? scenePoses[0]
         gsap.set(scene, {
           force3D: true,
-          x: pose.x,
-          y: pose.y,
+          x: 0,
+          y: 0,
           z: pose.z,
+          scale: sceneScale,
           xPercent: -50,
           yPercent: -50,
         })
@@ -188,7 +199,102 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       !isAnimatingRef.current &&
       !prefersReducedMotion.matches
 
+    const enterAncient = () => {
+      if (!isIntroRef.current || !canAcceptStep()) {
+        return false
+      }
+
+      inputLockedRef.current = true
+      isAnimatingRef.current = true
+      setIsAnimating(true)
+      introTweenRef.current?.kill()
+
+      const intro = introRef.current
+      if (!intro) {
+        isIntroRef.current = false
+        setIsIntro(false)
+        releaseInputLock()
+        return true
+      }
+
+      introTweenRef.current = gsap
+        .timeline({
+          onComplete: () => {
+            isIntroRef.current = false
+            setIsIntro(false)
+            releaseInputLock()
+          },
+        })
+        .set(intro, { opacity: 1, scale: 1 })
+        .set(intro.querySelectorAll('[data-ink-splash]'), {
+          clearProps: 'all',
+        })
+        .to(intro.querySelectorAll('[data-ink-splash]'), {
+          scale: 1.8,
+          opacity: 0,
+          duration: 0.95,
+          stagger: 0.06,
+          ease: 'power2.out',
+        })
+        .to(
+          intro,
+          {
+            opacity: 0,
+            scale: 1.08,
+            duration: 0.75,
+            ease: 'sine.inOut',
+          },
+          0.22,
+        )
+
+      return true
+    }
+
+    const showIntro = () => {
+      if (
+        isIntroRef.current ||
+        activeIndexRef.current !== 0 ||
+        !canAcceptStep()
+      ) {
+        return false
+      }
+
+      const intro = introRef.current
+      if (!intro) {
+        return false
+      }
+
+      inputLockedRef.current = true
+      isAnimatingRef.current = true
+      isIntroRef.current = true
+      setIsIntro(true)
+      setIsAnimating(true)
+      introTweenRef.current?.kill()
+
+      const inkSplashes = intro.querySelectorAll('[data-ink-splash]')
+      gsap.set(intro, { opacity: 0, scale: 1.08 })
+      gsap.set(inkSplashes, { clearProps: 'all' })
+
+      introTweenRef.current = gsap.timeline({
+        onComplete: () => {
+          releaseInputLock()
+        },
+      })
+      introTweenRef.current.to(intro, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.95,
+        ease: 'sine.out',
+      })
+
+      return true
+    }
+
     const goToScene = (nextIndex: number) => {
+      if (isIntroRef.current) {
+        return enterAncient()
+      }
+
       const targetIndex = Math.min(lastSceneIndex, Math.max(0, nextIndex))
       const currentIndex = activeIndexRef.current
 
@@ -214,7 +320,7 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       transitionTweenRef.current = gsap.to(state, {
         p: toProgress,
         duration: sceneTransitionDurationSeconds,
-        ease: 'power2.inOut',
+        ease: 'sine.inOut',
         onUpdate: () => {
           applyCamera(state.p)
         },
@@ -223,11 +329,6 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
           setActiveIndex(targetIndex)
           reportProgress(targetIndex)
           applyCamera(toProgress)
-
-          if (targetIndex === 0) {
-            setDirectionHint('滾動切換下一幕')
-            directionHintRef.current = '滾動切換下一幕'
-          }
 
           releaseInputLock()
         },
@@ -239,6 +340,11 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
     goToSceneRef.current = goToScene
 
     const stepScene = (direction: -1 | 1) => {
+      if (direction < 0 && activeIndexRef.current === 0) {
+        showIntro()
+        return
+      }
+
       goToScene(activeIndexRef.current + direction)
     }
 
@@ -254,6 +360,11 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       }
 
       if (Math.abs(event.deltaY) < sceneWheelThreshold) {
+        return
+      }
+
+      if (isIntroRef.current) {
+        enterAncient()
         return
       }
 
@@ -323,14 +434,14 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       inputLockedRef.current = false
       setIsAnimating(false)
       setIsStatic(prefersReducedMotion.matches)
+      isIntroRef.current = !prefersReducedMotion.matches
+      setIsIntro(!prefersReducedMotion.matches)
 
       if (prefersReducedMotion.matches) {
         document.documentElement.classList.remove('depth-scene-lock')
         activeIndexRef.current = 0
         setActiveIndex(0)
         reportProgress(0)
-        setDirectionHint('靜態閱讀模式')
-        directionHintRef.current = '靜態閱讀模式'
         return
       }
 
@@ -340,8 +451,6 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       setActiveIndex(0)
       reportProgress(0)
       applyCamera(getSceneProgress(0))
-      setDirectionHint('滾動切換下一幕')
-      directionHintRef.current = '滾動切換下一幕'
     }
 
     setup()
@@ -355,6 +464,7 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
 
     return () => {
       transitionTweenRef.current?.kill()
+      introTweenRef.current?.kill()
       clearTimers()
       document.documentElement.classList.remove('depth-scene-lock')
       stage.removeEventListener('wheel', onWheel)
@@ -379,6 +489,25 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       }
     >
       <div className="depth-stage__viewport">
+        <div
+          ref={introRef}
+          className={`depth-stage__intro${isIntro ? '' : ' depth-stage__intro--hidden'}`}
+          aria-hidden={!isIntro}
+        >
+          <div className="depth-stage__intro-paper">
+            <p className="depth-stage__intro-kicker">Three Lives, One Love</p>
+            <h1>三生三世</h1>
+            <p>一墨入唐，緣起於相逢</p>
+            <span className="depth-stage__intro-hint">向下滾動，入畫</span>
+            <span className="depth-stage__intro-seal" aria-hidden="true">
+              緣
+            </span>
+          </div>
+          <span className="depth-stage__intro-brush" aria-hidden="true" />
+          <span className="depth-stage__ink depth-stage__ink--a" data-ink-splash />
+          <span className="depth-stage__ink depth-stage__ink--b" data-ink-splash />
+          <span className="depth-stage__ink depth-stage__ink--c" data-ink-splash />
+        </div>
         <div ref={cameraRef} className="depth-stage__camera">
           <div className="depth-stage__world">
             {Array.from({ length: ambientLayerCount }, (_, index) => (
@@ -397,9 +526,29 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
                   sceneRefs.current[index] = node
                 }}
                 className="depth-scene"
+                data-era={scene.era}
                 data-tone={scene.tone}
                 aria-hidden={!isStatic && activeIndex !== index}
               >
+                <img
+                  className="depth-scene__image"
+                  src={scene.background.src}
+                  alt={scene.background.alt}
+                  style={{
+                    objectPosition: scene.background.position ?? 'center',
+                  }}
+                />
+                <div className="depth-scene__image-wash" aria-hidden="true" />
+                {scene.image ? (
+                  <img
+                    className="depth-scene__photo"
+                    src={scene.image.src}
+                    alt={scene.image.alt}
+                    style={{
+                      objectPosition: scene.image.position ?? 'center',
+                    }}
+                  />
+                ) : null}
                 <div
                   className="depth-scene__orb depth-scene__orb--a"
                   aria-hidden="true"
@@ -412,6 +561,16 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
                   <p className="depth-scene__eyebrow">{scene.eyebrow}</p>
                   <h2 className="depth-scene__title">{scene.title}</h2>
                   <p className="depth-scene__text">{scene.text}</p>
+                  {scene.id === 'banquet' ? (
+                    <a
+                      className="depth-scene__venue-link"
+                      href={wedding.venue.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      查看場地資訊
+                    </a>
+                  ) : null}
                 </div>
               </article>
             ))}
@@ -420,24 +579,6 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
 
         <div className="depth-stage__fog" aria-hidden="true" />
         <div className="depth-stage__vignette" aria-hidden="true" />
-
-        <div className="depth-stage__hud">
-          <div>
-            <p className="depth-stage__hud-label">Scene Step Demo</p>
-            <p className="depth-stage__hud-index">
-              {String(activeIndex + 1).padStart(2, '0')} /{' '}
-              {String(sceneCount).padStart(2, '0')}
-            </p>
-            <p className="depth-stage__hud-hint">
-              {isAnimating ? directionHint : '一次滾動 = 完整切換一幕'}
-            </p>
-          </div>
-          {activeIndex === 0 && !isAnimating ? (
-            <p className="depth-stage__hint hint-pulse">向下滾動進入下一幕</p>
-          ) : (
-            <span />
-          )}
-        </div>
 
         <div className="depth-stage__rail">
           {depthScenes.map((scene, index) => (
