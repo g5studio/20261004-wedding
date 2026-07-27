@@ -9,6 +9,11 @@ export const oneSecondToMilliseconds = 1000
 export const microInteractionDurationMs = 200
 
 /**
+ * 序章喜帖封面停留後開始翻頁的延遲。
+ */
+export const invitationPopupOpenDelayMs = 1200
+
+/**
  * 將秒轉為毫秒。
  */
 export function secondsToMilliseconds(seconds: number) {

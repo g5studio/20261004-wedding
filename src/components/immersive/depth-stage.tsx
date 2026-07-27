@@ -419,7 +419,9 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       }
 
       if (isIntroRef.current) {
-        enterAncient()
+        if (event.deltaY > 0) {
+          enterAncient()
+        }
         return
       }
 

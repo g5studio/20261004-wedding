@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { DepthStage } from '@/components/immersive/depth-stage'
+import { InvitationPopup } from '@/components/invitation/invitation-popup'
 import { ScrollProgress } from '@/components/layout/scroll-progress'
 import { useSmoothScroll } from '@/hooks/use-smooth-scroll'
 
@@ -13,6 +14,7 @@ function App() {
 
   return (
     <main className="relative">
+      <InvitationPopup />
       <ScrollProgress progress={progress} />
       <DepthStage onSceneProgress={setProgress} />
     </main>

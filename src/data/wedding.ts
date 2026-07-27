@@ -3,8 +3,8 @@
  */
 export const wedding = {
   couple: {
-    partnerA: 'Partner A',
-    partnerB: 'Partner B',
+    partnerA: 'William',
+    partnerB: 'Jill',
   },
   date: {
     iso: '2026-10-04',
@@ -25,10 +25,41 @@ export const wedding = {
   },
   banquet: {
     name: '結婚宴',
-    location: 'B1 大宴會廳',
+    location: 'B2 大宴會廳',
     time: '12:00',
   },
 } as const
+
+/**
+ * 婚禮當日流程，供序章喜帖 popup 與其他資訊元件共用。
+ */
+export const invitationSchedule = [
+  {
+    time: '09:50',
+    description: '開放入場',
+    icon: 'entry',
+  },
+  {
+    time: '10:00',
+    description: '證婚儀式',
+    icon: 'rings',
+  },
+  {
+    time: '10:30–11:00',
+    description: '拍照時間',
+    icon: 'camera',
+  },
+  {
+    time: '12:00',
+    description: '開放入席',
+    icon: 'banquet',
+  },
+  {
+    time: '12:30',
+    description: '午宴開始',
+    icon: 'meal',
+  },
+] as const
 
 export type DepthScene = {
   id: string
@@ -148,7 +179,7 @@ export const depthScenes: DepthScene[] = [
     id: 'banquet',
     eyebrow: '結婚宴',
     title: '共赴一席',
-    text: '12:00・B1 大宴會廳\n台北文華東方酒店\n期待與您共度這一日。',
+    text: '12:00・B2 大宴會廳\n台北文華東方酒店\n期待與您共度這一日。',
     era: 'banquet',
     tone: 'moon',
     background: {
