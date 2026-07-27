@@ -117,7 +117,7 @@ export const depthScenes: DepthScene[] = [
     id: 'contemporary',
     eyebrow: '第四世｜今生',
     title: '此刻相愛',
-    text: '這一世，我們穿上韓風西裝，走過所有等待，終於把故事帶到今天。',
+    text: '這一世，我們走過所有等待，終於把故事帶到今天。',
     era: 'contemporary',
     tone: 'dusk',
     background: {

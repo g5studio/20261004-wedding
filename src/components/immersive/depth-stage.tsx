@@ -9,7 +9,7 @@ import { depthScenes, wedding } from '@/data/wedding'
 import {
   getSceneProgress,
   sampleCameraPath,
-  scenePoses,
+  sceneProgressStops,
 } from '@/shared/camera-path'
 import {
   depthFocusDistancePx,
@@ -22,6 +22,20 @@ import {
 import './depth-stage.css'
 
 const ambientLayerCount = 6
+
+/**
+ * 相機旋轉幅度倍率，保留方向感並限制文字與照片的位移。
+ */
+const cameraRotationScale = {
+  x: 0.18,
+  y: 0.1,
+  z: 0.06,
+} as const
+
+/**
+ * 相機橫向與垂直位移倍率，讓鏡頭依序從不同方向進入場景。
+ */
+const cameraPositionScale = 0.45
 
 type DepthStageProps = {
   /**
@@ -126,10 +140,52 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
       return progress === sceneProgress ? 1 : 0
     }
 
+    const getDirectionalTransitionFactor = (progress: number) => {
+      const nextStopIndex = sceneProgressStops.findIndex(
+        (stop) => stop > progress,
+      )
+      if (nextStopIndex <= 0 || nextStopIndex >= sceneProgressStops.length) {
+        return 0
+      }
+
+      const previousStop = sceneProgressStops[nextStopIndex - 1]
+      const nextStop = sceneProgressStops[nextStopIndex]
+      const segmentProgress =
+        (progress - previousStop) / (nextStop - previousStop)
+
+      return Math.sin(Math.PI * gsap.utils.clamp(0, 1, segmentProgress))
+    }
+
     const applyCamera = (progress: number) => {
       journeyProgressRef.current = progress
       const camera = sampleCameraPath(progress)
-      cameraNode.style.transform = `translate3d(0, 0, ${-camera.z}px)`
+      const isMobileViewport = window.innerWidth <= 767
+      const directionFactor = getDirectionalTransitionFactor(progress)
+      const cameraX = isMobileViewport
+        ? 0
+        : camera.x * cameraPositionScale * directionFactor
+      const cameraY = isMobileViewport
+        ? 0
+        : camera.y * cameraPositionScale * directionFactor
+      const cameraRotationX = isMobileViewport
+        ? 0
+        : camera.rx * cameraRotationScale.x * directionFactor
+      const cameraRotationY = isMobileViewport
+        ? 0
+        : camera.ry * cameraRotationScale.y * directionFactor
+      const cameraRotationZ = isMobileViewport
+        ? 0
+        : camera.rz * cameraRotationScale.z * directionFactor
+      const cameraZoom = isMobileViewport
+        ? 1
+        : 1 + directionFactor * 0.08
+      cameraNode.style.transform = [
+        `translate3d(${-cameraX}px, ${-cameraY}px, 0)`,
+        `rotateX(${cameraRotationX}deg)`,
+        `rotateY(${cameraRotationY}deg)`,
+        `rotateZ(${cameraRotationZ}deg)`,
+        `scale(${cameraZoom})`,
+      ].join(' ')
 
       const sceneDistanceList = getScenes()
       sceneDistanceList.forEach((scene, index) => {
@@ -155,13 +211,12 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
     const placeWorld = () => {
       const sceneScale = 1
 
-      getScenes().forEach((scene, index) => {
-        const pose = scenePoses[index] ?? scenePoses[0]
+      getScenes().forEach((scene) => {
         gsap.set(scene, {
           force3D: true,
           x: 0,
           y: 0,
-          z: pose.z,
+          z: 0,
           scale: sceneScale,
           xPercent: -50,
           yPercent: -50,

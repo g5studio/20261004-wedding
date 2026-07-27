@@ -23,7 +23,7 @@ html.depth-scene-lock body {
    * 場景以滿版畫布交叉淡化，避免遠處 3D 平面在轉場中露出矩形邊界。
    * 深度感改由場景內容的透明度、霧化與微幅位移呈現。
    */
-  perspective: none;
+  perspective: var(--depth-perspective, 1400px);
   perspective-origin: 50% 48%;
   background:
     radial-gradient(120% 80% at 50% -10%, rgb(63 107 86 / 0.34), transparent 55%),
@@ -1864,14 +1864,22 @@ html.depth-scene-lock body {
 }
 
 .depth-scene {
-  contain: paint;
   top: 50%;
   left: 50%;
-  transform: translate3d(-50%, -50%, 0) !important;
+  overflow: visible;
 }
 
 .depth-scene__image {
+  inset: 0;
+  width: 100%;
+  height: 100%;
   transform: scale(1.03) !important;
+}
+
+.depth-scene__image-wash {
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .depth-scene__photo {
@@ -1973,13 +1981,35 @@ html.depth-scene-lock body {
 }
 
 @media (max-width: 767px) {
+  .depth-scene[data-era='republic'] .depth-scene__image {
+    object-position: center center !important;
+    transform: scale(1.28) !important;
+  }
+
   .depth-scene[data-era='contemporary'] .depth-scene__photo {
-    inset: 0 !important;
+    inset: auto 0 0 !important;
     width: 100vw;
-    height: 100svh;
-    object-fit: cover;
+    height: 72svh;
+    object-fit: contain;
     object-position: center center;
-    opacity: 0.78;
+    opacity: 1 !important;
+    filter: saturate(1) contrast(1.06) !important;
+    -webkit-mask-image: radial-gradient(
+      ellipse 82% 42% at 50% 52%,
+      #000 0%,
+      #000 32%,
+      rgb(0 0 0 / 0.15) 65%,
+      rgb(0 0 0 / 0.05) 84%,
+      transparent 100%
+    ) !important;
+    mask-image: radial-gradient(
+      ellipse 82% 42% at 50% 52%,
+      #000 0%,
+      #000 32%,
+      rgb(0 0 0 / 0.15) 65%,
+      rgb(0 0 0 / 0.05) 84%,
+      transparent 100%
+    ) !important;
   }
 
   .depth-scene[data-era='contemporary'] .depth-scene__panel {
@@ -2002,5 +2032,44 @@ html.depth-scene-lock body {
   .depth-scene[data-era='contemporary'] .depth-scene__panel > * {
     max-width: 88vw;
     transform: none;
+  }
+}
+
+/*
+ * 民國與今生的文案層級與前兩幕一致：
+ * 保留各自色調，但讓世代標籤不再縮成難以辨識的小字。
+ */
+.depth-scene[data-era='republic'] .depth-scene__eyebrow,
+.depth-scene[data-era='contemporary'] .depth-scene__eyebrow {
+  font-family: var(--typography-font-script);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  letter-spacing: 0.18em;
+  text-transform: none;
+  color: rgb(255 224 173 / 0.96);
+  text-shadow:
+    0 2px 5px rgb(11 16 14 / 0.72),
+    0 0 18px rgb(11 16 14 / 0.42);
+}
+
+@media (max-width: 767px) {
+  .depth-scene[data-era='republic'] .depth-scene__eyebrow,
+  .depth-scene[data-era='contemporary'] .depth-scene__eyebrow {
+    font-size: clamp(1rem, 5vw, 1.35rem);
+    letter-spacing: 0.12em;
+  }
+}
+
+/*
+ * 民國背景圖的原始素材上下帶有建築來源文字，
+ * 以中心放大裁切，避免它們進入邀請函畫面。
+ */
+.depth-scene[data-era='republic'] .depth-scene__image {
+  object-position: center center !important;
+  transform: scale(1.18) !important;
+}
+
+@media (max-width: 767px) {
+  .depth-scene[data-era='republic'] .depth-scene__image {
+    transform: scale(1.28) !important;
   }
 }
