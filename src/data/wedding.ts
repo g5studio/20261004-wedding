@@ -98,7 +98,7 @@ export const depthScenes: DepthScene[] = [
     era: 'ancient',
     tone: 'dawn',
     background: {
-      src: imagePath('background-zhishan-garden.jpg'),
+      src: imagePath('background-zhishan-garden.webp'),
       alt: '至善園仿宋明庭園，水池、樹影與古典亭廊',
       position: 'center',
     },

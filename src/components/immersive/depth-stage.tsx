@@ -19,6 +19,7 @@ import {
   sceneTransitionDurationSeconds,
   sceneWheelThreshold,
 } from '@/shared/constants/scroll.constants'
+import { sceneImagePreloadStartDelayMs } from '@/shared/constants/time.constants'
 import './depth-stage.css'
 
 const ambientLayerCount = 6
@@ -76,6 +77,7 @@ export function DepthStage({
   const [isStatic, setIsStatic] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isIntro, setIsIntro] = useState(true)
+  const [preparedSceneCount, setPreparedSceneCount] = useState(0)
 
   const sceneCount = depthScenes.length
   const lastSceneIndex = sceneCount - 1
@@ -83,6 +85,62 @@ export function DepthStage({
   useEffect(() => {
     onSceneProgressRef.current = onSceneProgress
   }, [onSceneProgress])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    /**
+     * 先透過獨立 Image 物件完成下載與解碼，避免場景顯示時才開始請求。
+     */
+    function prepareImage(src: string, fetchPriority: 'high' | 'low') {
+      return new Promise<void>((resolve) => {
+        const image = new Image()
+        image.decoding = 'async'
+        image.fetchPriority = fetchPriority
+        image.onload = () => {
+          image.decode().then(
+            () => resolve(),
+            () => resolve(),
+          )
+        }
+        image.onerror = () => resolve()
+        image.src = src
+      })
+    }
+
+    /**
+     * 每一幕的背景與婚紗照為一批，完成後才開始下一幕。
+     */
+    async function prepareScenesInOrder() {
+      for (const [index, scene] of depthScenes.entries()) {
+        const sceneSources = [
+          scene.background.src,
+          ...(scene.image ? [scene.image.src] : []),
+        ]
+
+        await Promise.all(
+          sceneSources.map((src) =>
+            prepareImage(src, index === 0 ? 'high' : 'low'),
+          ),
+        )
+
+        if (isCancelled) {
+          return
+        }
+
+        setPreparedSceneCount(index + 1)
+      }
+    }
+
+    const preloadTimer = window.setTimeout(() => {
+      void prepareScenesInOrder()
+    }, sceneImagePreloadStartDelayMs)
+
+    return () => {
+      isCancelled = true
+      window.clearTimeout(preloadTimer)
+    }
+  }, [])
 
   useEffect(() => {
     const stage = stageRef.current
@@ -562,7 +620,29 @@ export function DepthStage({
             <p className="depth-stage__intro-kicker">Three Lives, One Love</p>
             <h1>三生三世</h1>
             <p>一墨入唐，緣起於相逢</p>
-            <span className="depth-stage__intro-hint">向下滾動，入畫</span>
+            <div className="depth-stage__intro-guide">
+              <div className="depth-stage__intro-guide-mobile">
+                <div className="depth-stage__swipe-track" aria-hidden="true">
+                  <svg
+                    className="depth-stage__swipe-hand"
+                    viewBox="0 0 72 72"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="none"
+                      d="M24 40V12a5 5 0 0 1 10 0v23M34 31v-8a5 5 0 0 1 10 0v14M44 34v-6a5 5 0 0 1 10 0v12M54 38v-4a5 5 0 0 1 10 0v14c0 11-9 20-20 20H32c-7 0-13-3-17-9L6 47a5 5 0 0 1 8-6l10 12"
+                    />
+                  </svg>
+                </div>
+                <span>向上滑動，入畫</span>
+              </div>
+              <div className="depth-stage__intro-guide-desktop">
+                <span className="depth-stage__mouse" aria-hidden="true">
+                  <i />
+                </span>
+                <span>向下滾動，入畫</span>
+              </div>
+            </div>
             <button
               className="depth-stage__intro-seal"
               type="button"
@@ -599,20 +679,28 @@ export function DepthStage({
                 data-tone={scene.tone}
                 aria-hidden={!isStatic && activeIndex !== index}
               >
-                <img
-                  className="depth-scene__image"
-                  src={scene.background.src}
-                  alt={scene.background.alt}
-                  style={{
-                    objectPosition: scene.background.position ?? 'center',
-                  }}
-                />
+                {index < preparedSceneCount ? (
+                  <img
+                    className="depth-scene__image"
+                    src={scene.background.src}
+                    alt={scene.background.alt}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority={index === 0 ? 'high' : 'low'}
+                    style={{
+                      objectPosition: scene.background.position ?? 'center',
+                    }}
+                  />
+                ) : null}
                 <div className="depth-scene__image-wash" aria-hidden="true" />
-                {scene.image ? (
+                {scene.image && index < preparedSceneCount ? (
                   <img
                     className="depth-scene__photo"
                     src={scene.image.src}
                     alt={scene.image.alt}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority={index === 0 ? 'high' : 'low'}
                     style={{
                       objectPosition: scene.image.position ?? 'center',
                     }}

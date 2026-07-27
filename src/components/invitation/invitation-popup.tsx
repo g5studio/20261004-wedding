@@ -124,6 +124,9 @@ export function InvitationPopup({ openRequest }: InvitationPopupProps) {
             <img
               src={`${import.meta.env.BASE_URL}images/invitation-inner-banner.png`}
               alt="William 與 Jill 身穿中式婚服的合照"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
             <div className="invitation-popup__hero-shade" />
             <div className="invitation-popup__hero-copy">
@@ -185,13 +188,12 @@ export function InvitationPopup({ openRequest }: InvitationPopupProps) {
           onKeyDown={handleCoverKeyDown}
         >
           <div className="invitation-popup__cover-half invitation-popup__cover-left">
-            <div className="invitation-popup__cover-face invitation-popup__cover-front">
-              <img
-                className="invitation-popup__cover-image"
-                src={`${import.meta.env.BASE_URL}images/invitation-cover-photo.png`}
-                alt=""
-              />
-            </div>
+            <div
+              className="invitation-popup__cover-face invitation-popup__cover-front"
+              style={{
+                backgroundImage: `url("${import.meta.env.BASE_URL}images/invitation-cover-photo.png")`,
+              }}
+            />
             <div className="invitation-popup__cover-face invitation-popup__cover-back" />
           </div>
           <div className="invitation-popup__cover-half invitation-popup__cover-right">

@@ -14,6 +14,11 @@ export const microInteractionDurationMs = 200
 export const invitationPopupOpenDelayMs = 3000
 
 /**
+ * 讓喜帖關鍵圖片優先取得頻寬後，再開始依序預載場景圖片。
+ */
+export const sceneImagePreloadStartDelayMs = 600
+
+/**
  * 將秒轉為毫秒。
  */
 export function secondsToMilliseconds(seconds: number) {

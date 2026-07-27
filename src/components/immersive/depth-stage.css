@@ -1207,11 +1207,109 @@ html.depth-scene-lock body {
   letter-spacing: 0.24em;
 }
 
-.depth-stage__intro-hint {
-  margin-top: 2rem;
+.depth-stage__intro-guide {
+  margin-top: 1.15rem;
   color: rgb(38 56 45 / 0.64);
   font-size: 0.72rem;
   letter-spacing: 0.26em;
+}
+
+.depth-stage__intro-guide-mobile {
+  display: none;
+}
+
+.depth-stage__intro-guide-desktop {
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+}
+
+.depth-stage__mouse {
+  position: relative;
+  display: block;
+  width: 1.35rem;
+  height: 2rem;
+  border: 1px solid rgb(38 56 45 / 0.58);
+  border-radius: 999px;
+}
+
+.depth-stage__mouse i {
+  position: absolute;
+  top: 0.34rem;
+  left: 50%;
+  width: 0.16rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: currentcolor;
+  transform: translateX(-50%);
+  animation: depth-intro-mouse-wheel 1.4s ease-in-out infinite;
+}
+
+.depth-stage__swipe-track {
+  position: relative;
+  width: 2.8rem;
+  height: 3.6rem;
+}
+
+.depth-stage__swipe-track::before {
+  position: absolute;
+  top: 0.15rem;
+  left: 50%;
+  width: 1px;
+  height: 2.5rem;
+  background: linear-gradient(180deg, transparent, rgb(38 56 45 / 0.28));
+  content: '';
+}
+
+.depth-stage__swipe-hand {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 2rem;
+  height: 2.7rem;
+  fill: rgb(247 240 221 / 0.9);
+  stroke: rgb(38 56 45 / 0.72);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+  animation: depth-intro-swipe-up 1.65s ease-out infinite;
+}
+
+@keyframes depth-intro-mouse-wheel {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0.72rem);
+  }
+}
+
+@keyframes depth-intro-swipe-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0.8rem);
+  }
+
+  24% {
+    opacity: 1;
+  }
+
+  72% {
+    opacity: 1;
+    transform: translateY(-0.7rem);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
 }
 
 .depth-stage__intro-seal {
@@ -1259,6 +1357,16 @@ html.depth-scene-lock body {
 }
 
 @media (max-width: 767px) {
+  .depth-stage__intro-guide-desktop {
+    display: none;
+  }
+
+  .depth-stage__intro-guide-mobile {
+    display: grid;
+    justify-items: center;
+    gap: 0.45rem;
+  }
+
   .depth-stage__intro-seal {
     right: 0.25rem;
   }
@@ -1767,7 +1875,9 @@ html.depth-scene-lock body {
 
 @media (prefers-reduced-motion: reduce) {
   .depth-stage__intro-paper,
-  .depth-stage__intro-seal {
+  .depth-stage__intro-seal,
+  .depth-stage__mouse i,
+  .depth-stage__swipe-hand {
     animation: none;
   }
 }
