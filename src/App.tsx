@@ -11,12 +11,23 @@ function App() {
   // 離散切換時關閉 Lenis，避免滾輪被平滑滾動吃掉。
   useSmoothScroll({ enabled: false })
   const [progress, setProgress] = useState(0)
+  const [invitationOpenRequest, setInvitationOpenRequest] = useState(0)
+
+  /**
+   * 由序章印章觸發重新開啟喜帖。
+   */
+  function requestInvitationOpen() {
+    setInvitationOpenRequest((currentRequest) => currentRequest + 1)
+  }
 
   return (
     <main className="relative">
-      <InvitationPopup />
+      <InvitationPopup openRequest={invitationOpenRequest} />
       <ScrollProgress progress={progress} />
-      <DepthStage onSceneProgress={setProgress} />
+      <DepthStage
+        onSceneProgress={setProgress}
+        onInvitationRequest={requestInvitationOpen}
+      />
     </main>
   )
 }

@@ -1216,18 +1216,52 @@ html.depth-scene-lock body {
 
 .depth-stage__intro-seal {
   position: absolute;
+  z-index: 3;
   right: -3.5rem;
   bottom: 0.4rem;
   display: grid;
   width: 2.7rem;
   height: 2.7rem;
   place-items: center;
+  padding: 0;
   border: 2px solid #a34f3d;
+  background: transparent;
   color: #a34f3d;
+  cursor: pointer;
   font-family: var(--typography-font-heading);
   font-size: 1.35rem;
   line-height: 1;
-  transform: rotate(7deg);
+  animation: depth-intro-seal-bounce 1.15s ease-in-out infinite;
+}
+
+.depth-stage__intro-seal:hover {
+  filter: brightness(0.85);
+}
+
+.depth-stage__intro-seal:focus-visible {
+  outline: 2px solid #a34f3d;
+  outline-offset: 0.35rem;
+}
+
+@keyframes depth-intro-seal-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(7deg);
+  }
+
+  45% {
+    transform: translateY(-0.55rem) rotate(7deg);
+  }
+
+  62% {
+    transform: translateY(-0.12rem) rotate(7deg);
+  }
+}
+
+@media (max-width: 767px) {
+  .depth-stage__intro-seal {
+    right: 0.25rem;
+  }
 }
 
 .depth-stage__intro-brush {
@@ -1732,7 +1766,8 @@ html.depth-scene-lock body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .depth-stage__intro-paper {
+  .depth-stage__intro-paper,
+  .depth-stage__intro-seal {
     animation: none;
   }
 }

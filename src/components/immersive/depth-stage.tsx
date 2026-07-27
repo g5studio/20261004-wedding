@@ -42,12 +42,19 @@ type DepthStageProps = {
    * 回傳 0–1 場景進度（以場景索引計算，非轉場中間值）。
    */
   onSceneProgress?: (progress: number) => void
+  /**
+   * 點擊序章印章時重新開啟喜帖。
+   */
+  onInvitationRequest?: () => void
 }
 
 /**
  * 離散場景切換的 3D 舞台：每次滾動完整播完一幕轉場，無法停在中間。
  */
-export function DepthStage({ onSceneProgress }: DepthStageProps) {
+export function DepthStage({
+  onSceneProgress,
+  onInvitationRequest,
+}: DepthStageProps) {
   const stageRef = useRef<HTMLElement>(null)
   const cameraRef = useRef<HTMLDivElement>(null)
   const introRef = useRef<HTMLDivElement>(null)
@@ -556,9 +563,14 @@ export function DepthStage({ onSceneProgress }: DepthStageProps) {
             <h1>三生三世</h1>
             <p>一墨入唐，緣起於相逢</p>
             <span className="depth-stage__intro-hint">向下滾動，入畫</span>
-            <span className="depth-stage__intro-seal" aria-hidden="true">
+            <button
+              className="depth-stage__intro-seal"
+              type="button"
+              onClick={onInvitationRequest}
+              aria-label="再次開啟喜帖"
+            >
               緣
-            </span>
+            </button>
           </div>
           <span className="depth-stage__intro-brush" aria-hidden="true" />
           <span className="depth-stage__ink depth-stage__ink--a" data-ink-splash />

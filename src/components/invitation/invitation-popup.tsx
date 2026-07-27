@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type KeyboardEvent } from 'react'
 import { invitationSchedule, wedding } from '@/data/wedding'
 import { invitationPopupOpenDelayMs } from '@/shared/constants/time.constants'
 import './invitation-popup.css'
@@ -7,6 +7,13 @@ type InvitationIconName = (typeof invitationSchedule)[number]['icon']
 
 type InvitationIconProps = {
   name: InvitationIconName
+}
+
+type InvitationPopupProps = {
+  /**
+   * 數值更新時重新顯示關閉後的喜帖。
+   */
+  openRequest: number
 }
 
 function InvitationIcon({ name }: InvitationIconProps) {
@@ -59,18 +66,37 @@ function InvitationIcon({ name }: InvitationIconProps) {
 /**
  * 序章入口的摺頁喜帖 popup，提供婚禮當日時間與場地資訊。
  */
-export function InvitationPopup() {
+export function InvitationPopup({ openRequest }: InvitationPopupProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [isOpened, setIsOpened] = useState(false)
 
+  /**
+   * 立即展開喜帖，供封面點擊與鍵盤操作共用。
+   */
+  function openInvitation() {
+    setIsOpened(true)
+  }
+
+  /**
+   * 讓封面可透過 Enter 或空白鍵展開。
+   */
+  function handleCoverKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      openInvitation()
+    }
+  }
+
   useEffect(() => {
+    setIsVisible(true)
+    setIsOpened(false)
     const openTimer = window.setTimeout(
       () => setIsOpened(true),
       invitationPopupOpenDelayMs,
     )
 
     return () => window.clearTimeout(openTimer)
-  }, [])
+  }, [openRequest])
 
   if (!isVisible) {
     return null
@@ -150,7 +176,14 @@ export function InvitationPopup() {
           </button>
           </div>
         </div>
-        <div className="invitation-popup__cover" aria-hidden="true">
+        <div
+          className="invitation-popup__cover"
+          role="button"
+          tabIndex={isOpened ? -1 : 0}
+          aria-label="打開喜帖"
+          onClick={openInvitation}
+          onKeyDown={handleCoverKeyDown}
+        >
           <div className="invitation-popup__cover-half invitation-popup__cover-left">
             <div className="invitation-popup__cover-face invitation-popup__cover-front">
               <img

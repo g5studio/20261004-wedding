@@ -110,7 +110,7 @@ export const depthScenes: DepthScene[] = [
   },
   {
     id: 'european',
-    eyebrow: '第二世｜近代',
+    eyebrow: '第二世｜異國',
     title: '玫瑰與遠方',
     text: '換了時代與衣裳，我們在歐風光影裡重逢。浪漫不是偶然，是每一世都認得你。',
     era: 'european',
