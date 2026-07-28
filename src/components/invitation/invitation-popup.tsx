@@ -36,16 +36,6 @@ function InvitationIcon({ name }: InvitationIconProps) {
     )
   }
 
-  if (name === 'camera') {
-    return (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M8 16h8l3-4h10l3 4h8v22H8z" />
-        <circle cx="24" cy="27" r="7" />
-        <path d="M12 21h3" />
-      </svg>
-    )
-  }
-
   if (name === 'banquet') {
     return (
       <svg viewBox="0 0 48 48" aria-hidden="true">

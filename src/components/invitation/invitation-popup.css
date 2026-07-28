@@ -255,7 +255,7 @@
 
 .invitation-popup__schedule {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.45rem;
   padding: 0.7rem 0;
   border-top: 1px solid rgb(138 104 64 / 0.25);
@@ -264,19 +264,11 @@
 
 .invitation-popup__event {
   display: grid;
-  grid-column: span 2;
+  grid-column: auto;
   justify-items: center;
   gap: 0.3rem;
   min-width: 0;
   text-align: center;
-}
-
-.invitation-popup__event:nth-child(4) {
-  grid-column: 2 / span 2;
-}
-
-.invitation-popup__event:nth-child(5) {
-  grid-column: 4 / span 2;
 }
 
 .invitation-popup__event-icon {
@@ -450,7 +442,7 @@
 
   .invitation-popup__schedule {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(2, auto);
     gap: 0 0.65rem;
     margin-inline: 0.65rem;
     padding: 0.5rem 0.35rem;
@@ -474,14 +466,10 @@
   }
 
   .invitation-popup__event:nth-child(3) {
-    grid-area: 3 / 1;
-  }
-
-  .invitation-popup__event:nth-child(4) {
     grid-area: 1 / 2;
   }
 
-  .invitation-popup__event:nth-child(5) {
+  .invitation-popup__event:nth-child(4) {
     grid-area: 2 / 2;
   }
 

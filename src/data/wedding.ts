@@ -22,7 +22,6 @@ export const wedding = {
     location: '8F 文華閣',
     entryTime: '09:50',
     time: '10:00',
-    photoTime: '10:30–11:00',
   },
   banquet: {
     name: '結婚宴',
@@ -45,11 +44,6 @@ export const invitationSchedule = [
     time: wedding.ceremony.time,
     description: '證婚儀式',
     icon: 'rings',
-  },
-  {
-    time: wedding.ceremony.photoTime,
-    description: '拍照時間',
-    icon: 'camera',
   },
   {
     time: wedding.banquet.entryTime,
