@@ -20,13 +20,15 @@ export const wedding = {
   ceremony: {
     name: '證婚儀式',
     location: '8F 文華閣',
+    entryTime: '09:50',
     time: '10:00',
-    note: '開放入場觀禮',
+    photoTime: '10:30–11:00',
   },
   banquet: {
     name: '結婚宴',
     location: 'B2 大宴會廳',
-    time: '12:00',
+    entryTime: '12:00',
+    time: '12:30',
   },
 } as const
 
@@ -35,27 +37,27 @@ export const wedding = {
  */
 export const invitationSchedule = [
   {
-    time: '09:50',
+    time: wedding.ceremony.entryTime,
     description: '開放入場',
     icon: 'entry',
   },
   {
-    time: '10:00',
+    time: wedding.ceremony.time,
     description: '證婚儀式',
     icon: 'rings',
   },
   {
-    time: '10:30–11:00',
+    time: wedding.ceremony.photoTime,
     description: '拍照時間',
     icon: 'camera',
   },
   {
-    time: '12:00',
+    time: wedding.banquet.entryTime,
     description: '開放入席',
     icon: 'banquet',
   },
   {
-    time: '12:30',
+    time: wedding.banquet.time,
     description: '午宴開始',
     icon: 'meal',
   },
@@ -166,7 +168,7 @@ export const depthScenes: DepthScene[] = [
     id: 'ceremony',
     eyebrow: '證婚儀式',
     title: '在文華閣相見',
-    text: '2026 / 10 / 04・星期日\n8F 文華閣・10:00\n開放入場觀禮',
+    text: '2026 / 10 / 04・星期日\n8F 文華閣・09:50 開放入場\n10:00 證婚儀式',
     era: 'ceremony',
     tone: 'ember',
     background: {
@@ -179,7 +181,7 @@ export const depthScenes: DepthScene[] = [
     id: 'banquet',
     eyebrow: '結婚宴',
     title: '共赴一席',
-    text: '12:00・B2 大宴會廳\n台北文華東方酒店\n期待與您共度這一日。',
+    text: 'B2 大宴會廳・12:00 開放入席\n12:30 午宴開始\n期待與您共度這一日。',
     era: 'banquet',
     tone: 'moon',
     background: {

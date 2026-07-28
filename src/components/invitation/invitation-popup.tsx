@@ -151,7 +151,7 @@ export function InvitationPopup({ openRequest }: InvitationPopupProps) {
             </div>
             <div className="invitation-popup__fact">
               <span>BANQUET</span>
-              <strong>12:30・午宴開始</strong>
+              <strong>{wedding.banquet.time}・午宴開始</strong>
               <small>{wedding.banquet.location}</small>
             </div>
           </div>
